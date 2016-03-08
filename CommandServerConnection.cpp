@@ -42,8 +42,9 @@ void CommandServerConnection::run() {
          * */
         if (bytesReceived ==0) {
             //exit = true;
-            this->socket().close();
+            //this->socket().close();
             std::cout << "No data" << std::endl;
+            exit= true;
             break;
         }else if(bytesReceived<4){//ex:-rrq\n\r
             std::cout << "Not enough args" << std::endl;

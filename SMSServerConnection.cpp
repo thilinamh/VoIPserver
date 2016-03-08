@@ -41,8 +41,9 @@ void SMSServerConnection::run() {
          * */
         if (bytesReceived == 0) {
             //exit = true;
-            this->socket().close();
+            //this->socket().close();
             std::cout << "No data" << endl;
+            exit=true;
             break;
 
         } else {

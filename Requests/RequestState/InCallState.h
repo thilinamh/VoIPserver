@@ -20,6 +20,10 @@ private:
     InCallState& operator=(const InCallState& rhs);
 
     void checkUserAvailability(const string &data, User &context) const;
+
+    void process_conf_req(User &context, const string &rem_number) const;
+
+    void process_call_req(User &context, const string &dest_uid);
 };
 
 

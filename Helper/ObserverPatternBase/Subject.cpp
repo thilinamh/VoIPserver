@@ -4,9 +4,8 @@
 
 #include "Subject.h"
 
-string Subject::registerObserver(shared_ptr<Observer> observer) {
+void Subject::registerObserver(shared_ptr<Observer> observer) {
     observerList.push_front(weak_ptr<Observer>(observer));
-    return getSessionKey();
 }
 
 void Subject::unregisterObserver(shared_ptr<Observer> observer) {
