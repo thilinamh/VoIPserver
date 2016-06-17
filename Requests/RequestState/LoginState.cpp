@@ -32,11 +32,11 @@ void LoginState::processRequest(const std::string &data, User &context) {
             bool found = context.load_by_uid();
 
             if (found && context.getUuid().compare(uuid)==0) {
-                context.port=CallAggregator::getPortFromPool();
+                //context.port=CallAggregator::getPortFromPool();
                 //CallAggregator *session1 =new CallAggregator(port);
 
 
-                string reg_ok_command(LOGIN_OK+std::to_string(context.port)+"\r\n");
+                string reg_ok_command(LOGIN_OK+string("\r\n"));
                 //context.writeToClient(reg_ok_command);
                 cout<<"user logged "<<uid<<" port "<<context.port<<endl;
 
@@ -88,7 +88,7 @@ void LoginState::processRequest(const std::string &data, User &context) {
         } catch (exception& e) {
             cout << "error Login unknown expt" <<e.what()<<endl;
         }
-    }else if (data.compare(0, 3, "cnr") == 0 || data.compare(0, 3, "kcs") == 0){
+    }else if (data.compare(0, 3, "cnr") == 0 ){
         context.setCurrent_state(CallSetuptState::getInstance());
         throw std::invalid_argument("forwarded to CallSetup");
     }

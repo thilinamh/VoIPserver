@@ -5,13 +5,14 @@
 #include "ConferenceSetupState.h"
 #include "../../UserStructure/User.hxx"
 
+
 void ConferenceSetupState::processRequest(const std::string &data, User &context) {
     std::cout << context.getUid()<<" in ConferenceSetupState " << data<< std::endl;
 
-    if (data.compare(0, 3, "can") == 0) {
+    if (data.compare(0, 3, "can") == 0) { // conf answer
         if(context.Session()){
             context.Session()->registerAsReceiver(context.shared_from_this());
-            context.Session()->getCaller().writeToClient("ccn\r\n");
+            //context.Session()->getCaller().writeToClient("ccn "+CallAggregator::getPortFromPool()); in client "ccn"=="con"
             context.Session()->startUDP();
         }
 

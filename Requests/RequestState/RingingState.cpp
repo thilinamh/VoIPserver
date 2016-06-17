@@ -17,8 +17,8 @@ void RingingState::processRequest(const std::string &data, User &context) {
         if (context.Session()) {
             try {
                 context.Session()->startUDP();
-                context.Session()->getCaller().writeToClient(CONNECT+CallAggregator::getPortFromPool());
-            }catch (const Poco::NotFoundException& e){
+                //context.Session()->getCaller().writeToClient(CONNECT+context.Session()->getPortOf());
+            }catch (const Poco::NotFoundException& e){ // if the observer list is zero
                 cerr<<e.what()<<endl;
             }
         //context.setCurrent_state(InCallState::getInstance());

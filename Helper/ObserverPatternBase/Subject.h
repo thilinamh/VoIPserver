@@ -18,7 +18,7 @@ public:
 
     virtual void notifyAll();
     virtual void sendToAll(const string &command);
-    virtual string registerObserver(shared_ptr<Observer> observer);
+    virtual void registerObserver(shared_ptr<Observer> observer);
     virtual ~Subject() { }
 
 protected:

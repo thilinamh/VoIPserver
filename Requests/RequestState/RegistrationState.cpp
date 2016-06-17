@@ -34,7 +34,7 @@ void RegistrationState::processRequest(const std::string &data, User &context) {
             context.setUid(elements->at(0));
             context.setUuid(elements->at(2));
 
-            if (context.registerUser(elements->at(1))) {
+            if (/*context.registerUser(elements->at(1))*/true) {
                 cout<<"verify message sent to "<<context.getUid()<<endl;
                 context.writeToClient(REG_PENDING, 0);
                 context.setCurrent_state(VerificationState::getInstance());

@@ -185,6 +185,7 @@ int User::writeToClient(const string &command, int timeout) {
    // write_thread.thread(tcpConnection->writeToSocket, const_cast<string&>(command));
 
     if(tcpConnection){
+        cout<<"writing to socket :"<<command<<endl;
         return this->tcpConnection->writeToSocket(command, timeout);
 
     }else{

@@ -44,7 +44,7 @@ void VerificationState::processRequest(const std::string &data, User &context) {
 
         }
 
-        if (context.getUid().compare(uid) == 0 && context.verifyRegistration(verif_num)) {
+        if (context.getUid().compare(uid) == 0 /*&& context.verifyRegistration(verif_num)*/) {
             cout << "verification success" << endl;
 
             if(context.save()){

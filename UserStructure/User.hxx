@@ -81,6 +81,7 @@ public:
     virtual void update(const std::string &message);
 
     shared_ptr<CallAggregator> &Session() ;
+    shared_ptr<CallAggregator> &Session() const;
 
     int port;
 private:

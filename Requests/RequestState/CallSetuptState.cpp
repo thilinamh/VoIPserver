@@ -33,21 +33,23 @@ void CallSetuptState::processRequest(const std::string &data, User &context) {
                 throw Poco::InvalidAccessException("You cannot call yourself ");
             }
             auto receiver = LoggedUsersMap::getInstance().findUser(dest_uid); //throws out_of_range exception
-            if (receiver != nullptr) { //this is not necessary. But checking it won't kill you
-                shared_ptr<CallAggregator> session(new CallAggregator());
+            if (receiver != nullptr && receiver->getCurrentState()==&LoginState::getInstance()) { //this is not necessary. But checking it won't kill you
+                shared_ptr <CallAggregator> session(new CallAggregator());
                 context.setSession(session);
                 receiver->setSession(context.Session()); // receiver will register itself as a observer on 'kcs' event
 
-                int bytes = receiver->writeToClientBlocking(CERT_REQUEST);
-                if(bytes<0){
+                int bytes = receiver->writeToClientBlocking(CERT_REQUEST, 5000);
+                if (bytes < 0) {
                     throw IOException("write failed");
                 }
-                string sessionKey(context.Session()->registerAsCaller(context));
-                cout << "registered as a caller" << endl;
-                std::thread async_thread(std::function<void()>([sessionKey, &context]() -> void {
-                    //local variable should be copied
-                    auto caller = context.shared_from_this();//we can use 'caller' reference but need to keep object until thread ends
+                receiver->setCurrent_state(CallSetuptState::getInstance());
 
+                context.Session()->registerAsCaller(context.shared_from_this());
+                cout << "registered as a caller" << endl;
+                std::thread async_thread(std::function<void()>([&context]() -> void {
+                    //local variable should be copied
+                    auto caller = context.shared_from_this();//we can use 'context' reference but need to keep User object until thread ends
+                    string sessionKey = context.Session()->getSessionKey();
 
                     try {
 
@@ -84,6 +86,11 @@ void CallSetuptState::processRequest(const std::string &data, User &context) {
                 async_thread.detach(); // now thread object can be deleted without affecting the running thread
 
 
+            } else{
+                cout << "user " << dest_uid << " not available" << endl;
+                //this_thread::__sleep_for(std::chrono::seconds(3),std::chrono::nanoseconds(0));
+                context.writeToClient(REMOTE_USER_NOT_AVAILABLE);
+                context.setCurrent_state(LoginState::getInstance());
             }
         } catch (const std::out_of_range &e) { // from find(uid)
             cout << "user " << dest_uid << " not available" << endl;
@@ -106,27 +113,30 @@ void CallSetuptState::processRequest(const std::string &data, User &context) {
             cerr << e.message() << endl;
             context.setCurrent_state(LoginState::getInstance());
         }
-
-
-
         // my_pub_key.replace(':','',);
 
 
-    } else if (data.compare(0, 3, "kcs") == 0) { //certificate response to server's request
+    }//this part has to be extracted to a seperte state.
+        // unless receiver can process call request prior receiving cert request
+    else if (data.compare(0, 3, "kcs") == 0) { //certificate response to server's request
         string my_pub_key = data.substr(4); //take data part
         std::replace(my_pub_key.begin(), my_pub_key.end(), ':', '\n');
         context.setMypubKey(my_pub_key);
 
         if (context.Session().get()) {// session could have been ended by caller
-            string sKey(context.Session()->registerAsReceiver(context.shared_from_this()));
+            context.Session()->registerAsReceiver(context.shared_from_this());
+            string sKey(context.Session()->getSessionKey());
             context.Session()->notify_caller(); //Notify waiting caller
+
             try {
                 context._behaviours->getCallInitializerBehaviour().sendSessionKey(sKey, context, true);
                 context.setCurrent_state(RingingState::getInstance());
+
             } catch (const Poco::Exception &e) {
-                context.writeToClient(DISCONNECT, 0);
+                context.writeToClient(DISCONNECT);
                 context.setCurrent_state(LoginState::getInstance());
             }
+
         } else {
             context.setCurrent_state(LoginState::getInstance());
         }
